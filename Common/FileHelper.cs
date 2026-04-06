@@ -1,4 +1,4 @@
-﻿namespace Common;
+﻿namespace AoC.Common;
 
 public static class FileHelper
 {
