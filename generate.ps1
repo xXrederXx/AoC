@@ -7,7 +7,9 @@ param(
     [int]$day
 )
 
-$dayFolder = "Day{0:D2}" -f $day
+$dayPadded = "{0:D2}" -f $day
+
+$dayFolder = "Day$dayPadded"
 $yearFolder = "Years/$year"
 $folder = "$yearFolder/$dayFolder"
 
@@ -30,10 +32,19 @@ New-Item -ItemType Directory -Force -Path $dataFolder | Out-Null
 # Create console project
 dotnet new console -n $projectName -o $folder
 
-# Replace Program.cs with template
+# Load template and replace variables
 if (Test-Path $templateProgram) {
-    Copy-Item $templateProgram $targetProgram -Force
-    Write-Host "Program.cs copied from template."
+
+    $content = Get-Content $templateProgram -Raw
+
+    $content = $content.Replace('${YEAR}', $year)
+    $content = $content.Replace('${DAY}', $day)
+    $content = $content.Replace('${DAY_PADDED}', $dayPadded)
+    $content = $content.Replace('${PROJECT}', $projectName)
+
+    Set-Content $targetProgram $content
+
+    Write-Host "Program.cs generated from template."
 }
 else {
     Write-Warning "Template Program.cs not found."
