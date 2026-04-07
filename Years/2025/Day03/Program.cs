@@ -20,7 +20,9 @@ internal class Program
         foreach (string battery in input)
         {
             int[] banks = battery.Select(charToInt).ToArray();
+            // Find the largest digit
             int firstIdx = findBiggestInRange(banks, 0, banks.Length - 1);
+            // Find the next largest after the first
             int secondIdx = findBiggestInRange(banks, firstIdx + 1, banks.Length);
             sum += banks[firstIdx] * 10 + banks[secondIdx];
         }
@@ -35,6 +37,7 @@ internal class Program
         {
             int[] banks = battery.Select(charToInt).ToArray();
             int[] indexes = new int[takes];
+            // Selectively find the largest digits, ensuring enough remain for later picks
             for (int i = 0; i < takes; i++)
             {
                 int startIdx = i == 0 ? 0 : indexes[i - 1] + 1;
@@ -44,6 +47,7 @@ internal class Program
                     banks.Length - startIdx - takes + i + 1
                 );
             }
+            // Form a number from the selected digits in order
             long active = indexes
                 .Select((idx, num) => banks[idx] * (long)Math.Pow(10, takes - 1 - num))
                 .Sum();

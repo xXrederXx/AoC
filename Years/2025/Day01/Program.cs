@@ -49,10 +49,12 @@ internal class Program
         foreach (int tick in values)
         {
             System.Console.Write($"Current: {current}\tTick: {tick}");
+            // Count full cycles (each 100 units wraps around)
             timesAtZero += Math.Abs(tick / 100);
             int start = current;
             current = (current + (tick % 100) + 100) % 100;
 
+            // Check if crossed zero during the move
             if (tick > 0 && start > current && start != 0)
             {
                 timesAtZero++;

@@ -26,6 +26,7 @@ internal class Program
         List<long> ingredientIds = [];
         List<Range> freshRanges = [];
 
+        // Parse input: lines with one number are ingredient IDs, lines with two numbers (start-end) are fresh ranges
         foreach (string line in input)
         {
             string[] splited = line.Split('-');
@@ -60,6 +61,7 @@ internal class Program
         }
         freshRanges = freshRanges.OrderBy(x => x.Start).ToList();
 
+        // Merge overlapping ranges iteratively until no more merges are possible
         List<Range> currentRanges = freshRanges;
         Range[] oldRanges = [];
         while (currentRanges.Count != oldRanges.Length)
@@ -73,6 +75,7 @@ internal class Program
 
                 if (oldRanges[i].End >= oldRanges[nextIdx].Start)
                 {
+                    // Ranges overlap, merge them
                     Range newRange = new(oldRanges[i].Start, Math.Max(oldRanges[nextIdx].End, oldRanges[i].End));
                     if (!currentRanges.Any(x => x.Includes(newRange)))
                     {

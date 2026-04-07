@@ -59,10 +59,10 @@ internal class Program
             long end = long.Parse(pair[1]);
             for (long testId = start; testId <= end; testId++)
             {
-                // Number of digits the test id has (Calclated: floor(log10(testId) + 1))
+                // Number of digits the test id has (Calculated: floor(log10(testId) + 1))
                 int numDigits = (int)Math.Floor(Math.Log10(testId) + 1); 
 
-                // Iterates over different lengths of possably repeating digits
+                // Iterates over different lengths of possibly repeating digits
                 for (int testLength = 1; testLength <= Math.Ceiling(numDigits / 2.0); testLength++)
                 {
                     // digits cant repeat if not evenly splittable
@@ -74,12 +74,12 @@ internal class Program
                     // This is used to check if a number could be repeated
                     double factor = 1;
 
-                    // Testing iteration
+                    // Testing iteration for each repetition count
                     for (int j = 1; j <= numDigits / testLength; j++)
                     {
                         factor += Math.Pow(10, j * testLength);
 
-                        // x / (10^(digits / 2) + 1)
+                        // Check if dividing by the repetition factor gives a whole number within range
                         double divided = testId / factor;
 
                         // check if it is whole number and if the divided is in the right range

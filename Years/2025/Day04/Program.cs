@@ -28,6 +28,7 @@ internal class Program
                     continue;
                 }
 
+                // Count cells that survive (have less than 4 neighbors)
                 bool hasLessThan4Neighbours = getNumNeighbours(grid, x, y) < 4;
                 sum += hasLessThan4Neighbours ? 1 : 0;
             }
@@ -41,6 +42,7 @@ internal class Program
         bool[][] grid = input.Select(x => x.Select(y => y == '@').ToArray()).ToArray();
         int sum = 0;
         int oldSum = -1;
+        // Simulate until the grid stabilizes (no changes in count)
         while (sum != oldSum)
         {
             oldSum = sum;
@@ -54,7 +56,7 @@ internal class Program
                     }
 
                     bool hasLessThan4Neighbours = getNumNeighbours(grid, x, y) < 4;
-                    grid[y][x] = !hasLessThan4Neighbours;
+                    grid[y][x] = !hasLessThan4Neighbours; // Update cell state
                     sum += hasLessThan4Neighbours ? 1 : 0;
                 }
             }
