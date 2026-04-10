@@ -1,6 +1,6 @@
 using System.Numerics;
-using System.Runtime.InteropServices;
 using AoC.Common;
+using ZLinq;
 
 namespace AoC.Y2025.Day07;
 
@@ -13,7 +13,7 @@ internal class Program
         string[] input = FileHelper.GetLines("data/input.txt");
 
         System.Console.WriteLine("Part 1: " + Part1(input));
-        //System.Console.WriteLine("Part 2: " + Part2(input));
+        System.Console.WriteLine("Part 2: WRONG" + Part2(input));
     }
 
     static string Part1(string[] input)
@@ -81,8 +81,82 @@ internal class Program
         return activatedSplitters.Distinct().Count().ToString();
     }
 
+    // Could not figure out yet
     static string Part2(string[] input)
     {
-        return string.Join('\n', input);
+        HashSet<Vector2Int> spliters = [];
+        Vector2Int startPos = new Vector2Int(1, 1);
+
+        for (int i = 0; i < input.Length; i++)
+        {
+            string line = input[i];
+            for (int j = 0; j < line.Length; j++)
+            {
+                if (line[j] == 'S')
+                {
+                    startPos = new Vector2Int(j, i);
+                }
+                if (line[j] == '^')
+                {
+                    spliters.Add(new Vector2Int(j, i));
+                }
+            }
+        }
+
+        int finishedBeams = 0;
+        float lowerBound = input.Length;
+
+        // Vector 3 here are used the following
+        // X, Y = Position, Z = Weight
+
+        Dictionary<Vector2Int, int> beamWeights = new();
+        Dictionary<Vector2Int, int> nextBeamWeights = new();
+
+        beamWeights[startPos] = 1;
+
+        while (beamWeights.Count != 0)
+        {
+            nextBeamWeights.Clear();
+
+            foreach ((Vector2Int beamTip, int beamWeight) in beamWeights)
+            {
+                Vector2Int nextPos = new Vector2Int(beamTip.X, beamTip.Y + 1);
+                if (nextPos.Y > lowerBound)
+                {
+                    // out of bounds
+                    finishedBeams += beamWeight;
+                    continue;
+                }
+
+                if (spliters.Contains(nextPos))
+                {
+                    AddWeight(
+                        nextBeamWeights,
+                        new Vector2Int(nextPos.X + 1, nextPos.Y),
+                        beamWeight
+                    );
+                    AddWeight(
+                        nextBeamWeights,
+                        new Vector2Int(nextPos.X - 1, nextPos.Y),
+                        beamWeight
+                    );
+                    continue;
+                }
+                // just continue
+                AddWeight(nextBeamWeights, nextPos, beamWeight);
+            }
+            var temp = beamWeights;
+            beamWeights = nextBeamWeights;
+            nextBeamWeights = temp;
+        }
+        return finishedBeams.ToString();
+    }
+
+    static void AddWeight(Dictionary<Vector2Int, int> dict, Vector2Int pos, int weight)
+    {
+        if (dict.TryGetValue(pos, out int existing))
+            dict[pos] = existing + weight;
+        else
+            dict[pos] = weight;
     }
 }
