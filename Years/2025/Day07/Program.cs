@@ -10,10 +10,15 @@ internal class Program
     {
         System.Console.WriteLine("Advent of Code 2025 - Day 07");
 
-        string[] input = FileHelper.GetLines("data/input.txt");
+        string[] input = FileHelper.GetLines("data/example.txt");
 
         System.Console.WriteLine("Part 1: " + Part1(input));
-        System.Console.WriteLine("Part 2: WRONG" + Part2(input));
+        System.Console.WriteLine("Part 2: " + Part2(input));
+
+        input = FileHelper.GetLines("data/input.txt");
+
+        System.Console.WriteLine("Part 1: " + Part1(input));
+        System.Console.WriteLine("Part 2: " + Part2(input));
     }
 
     static string Part1(string[] input)
@@ -103,14 +108,14 @@ internal class Program
             }
         }
 
-        int finishedBeams = 0;
-        float lowerBound = input.Length;
+        ulong finishedBeams = 0;
+        int lowerBound = input.Length;
 
         // Vector 3 here are used the following
         // X, Y = Position, Z = Weight
 
-        Dictionary<Vector2Int, int> beamWeights = new();
-        Dictionary<Vector2Int, int> nextBeamWeights = new();
+        Dictionary<Vector2Int, ulong> beamWeights = new();
+        Dictionary<Vector2Int, ulong> nextBeamWeights = new();
 
         beamWeights[startPos] = 1;
 
@@ -118,7 +123,7 @@ internal class Program
         {
             nextBeamWeights.Clear();
 
-            foreach ((Vector2Int beamTip, int beamWeight) in beamWeights)
+            foreach ((Vector2Int beamTip, ulong beamWeight) in beamWeights)
             {
                 Vector2Int nextPos = new Vector2Int(beamTip.X, beamTip.Y + 1);
                 if (nextPos.Y > lowerBound)
@@ -152,9 +157,9 @@ internal class Program
         return finishedBeams.ToString();
     }
 
-    static void AddWeight(Dictionary<Vector2Int, int> dict, Vector2Int pos, int weight)
+    static void AddWeight(Dictionary<Vector2Int, ulong> dict, Vector2Int pos, ulong weight)
     {
-        if (dict.TryGetValue(pos, out int existing))
+        if (dict.TryGetValue(pos, out ulong existing))
             dict[pos] = existing + weight;
         else
             dict[pos] = weight;
