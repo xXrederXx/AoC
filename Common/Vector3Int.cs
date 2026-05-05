@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Security.Cryptography.X509Certificates;
 
 namespace AoC.Common;
 
@@ -41,5 +42,19 @@ public readonly struct Vector3Int : IEquatable<Vector3Int>
     public static bool operator !=(Vector3Int left, Vector3Int right)
     {
         return !(left == right);
+    }
+
+    public static double Distance(Vector3Int left, Vector3Int right)
+    {
+        return Math.Sqrt(DistancePow(left, right));
+    }
+
+    public static double DistancePow(Vector3Int left, Vector3Int right)
+    {
+        double dX = left.X - right.X;
+        double dY = left.Y - right.Y;
+        double dZ = left.Z - right.Z;
+
+        return dX * dX + dY * dY + dZ * dZ;
     }
 }
