@@ -5,46 +5,60 @@ namespace AoC.Y2025.Day08;
 
 public class Circuit : IEquatable<Circuit>
 {
-    public Vector3Int[] JunctionBoxes { get; private set; }
-    public int NumberBoxes => JunctionBoxes.Length;
+    private readonly List<Connection> connections = [];
+    public ulong NumJBoxes =>
+        (ulong)connections.SelectMany(con => new Vector3Int[] { con.Left, con.Right }).Distinct().LongCount();
 
-    public Circuit(Vector3Int junctionBox)
+    public Circuit() { }
+
+    public Circuit(List<Connection> connections)
     {
-        JunctionBoxes = [junctionBox];
+        this.connections = connections;
     }
 
-    public Circuit Merge(Circuit other)
+    public bool Contains(Vector3Int jBox)
     {
-        Vector3Int[] newCircuit = new Vector3Int[JunctionBoxes.Length + other.NumberBoxes];
-        Array.Copy(JunctionBoxes, 0, newCircuit, 0, JunctionBoxes.Length);
-        Array.Copy(
-            other.JunctionBoxes,
-            0,
-            newCircuit,
-            JunctionBoxes.Length,
-            other.JunctionBoxes.Length
-        );
-        JunctionBoxes = newCircuit;
-        return this;
+        return connections.Any(x => x.Left == jBox || x.Right == jBox);
     }
 
-    public double CalcNearestDistance(Circuit other)
+    public enum MergeType
     {
-        double minDist = double.PositiveInfinity;
-        foreach (Vector3Int junctionBoxOther in other.JunctionBoxes)
+        CREATE,
+        ADD,
+        MERGE_SAME,
+        MERGE_DIFFERENT,
+    }
+
+    public static (Circuit, MergeType) MergeCircuits(
+        Circuit? left,
+        Circuit? right,
+        Connection connection
+    )
+    {
+        if (left is null && right is null)
         {
-            foreach (Vector3Int junctionBoxThis in JunctionBoxes)
-            {
-                double dist = Vector3Int.DistancePow(junctionBoxThis, junctionBoxOther);
-                minDist = dist < minDist ? dist : minDist;
-            }
+            return (new Circuit([connection]), MergeType.CREATE);
         }
-        return minDist;
-    }
+        if (left is null && right is not null)
+        {
+            right.connections.Add(connection);
+            return (right, MergeType.ADD);
+        }
+        if (left is not null && right is null)
+        {
+            left.connections.Add(connection);
+            return (left, MergeType.ADD);
+        }
 
-    public bool Equals(Circuit? other)
-    {
-        return other is not null && JunctionBoxes.SequenceEqual(other.JunctionBoxes);
+        if (left == right)
+        {
+            left!.connections.Add(connection);
+            return (left, MergeType.MERGE_SAME);
+        }
+
+        left!.connections.Add(connection);
+        left.connections.AddRange(right!.connections);
+        return (left, MergeType.MERGE_DIFFERENT);
     }
 
     public override bool Equals(object? obj)
@@ -52,15 +66,20 @@ public class Circuit : IEquatable<Circuit>
         return obj is Circuit circuit && Equals(circuit);
     }
 
+    public bool Equals(Circuit? other)
+    {
+        return other is not null && connections.SequenceEqual(other.connections);
+    }
+
     public override int GetHashCode()
     {
-        return ((IStructuralEquatable)JunctionBoxes).GetHashCode(
+        return ((IStructuralEquatable)connections).GetHashCode(
             EqualityComparer<Vector3Int>.Default
         );
     }
 
     public override string ToString()
     {
-        return string.Join(",", JunctionBoxes);
+        return $"Len({NumJBoxes}) " + string.Join(", ", connections);
     }
 }
