@@ -57,4 +57,9 @@ public readonly struct Vector3Int : IEquatable<Vector3Int>
 
         return dX * dX + dY * dY + dZ * dZ;
     }
+
+
+    public static Vector3Int operator +(Vector3Int left, Vector3Int right) => new Vector3Int(left.X + right.X, left.Y + right.Y, left.Z + right.Z);
+    public static Vector3Int operator -(Vector3Int left, Vector3Int right) => new Vector3Int(left.X - right.X, left.Y - right.Y, left.Z - right.Z);
+    public static Vector3Int operator *(Vector3Int left, Vector3Int right) => new Vector3Int(left.X * right.X, left.Y * right.Y, left.Z * right.Z);
 }
