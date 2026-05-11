@@ -65,7 +65,7 @@ internal class Program
                 {
                     continue;
                 }
-                int asInt = CharHelper.SafeCharToInt(numberLines.ElementAt(rowIdx)[columnIdx]);
+                int asInt = CharHelper.TryParseDigit(numberLines.ElementAt(rowIdx)[columnIdx]);
                 if (asInt == -1)
                 {
                     continue;
