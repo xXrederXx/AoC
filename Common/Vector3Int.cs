@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Numerics;
 using System.Security.Cryptography.X509Certificates;
 
 namespace AoC.Common;
@@ -8,6 +9,15 @@ public readonly struct Vector3Int : IEquatable<Vector3Int>
     public readonly int X;
     public readonly int Y;
     public readonly int Z;
+
+    public static readonly Vector3Int One = new Vector3Int(1, 1, 1);
+    public static readonly Vector3Int Up = new Vector3Int(0, 1, 0);
+    public static readonly Vector3Int Right = new Vector3Int(1, 0, 0);
+    public static readonly Vector3Int Down = new Vector3Int(0, -1, 0);
+    public static readonly Vector3Int Left = new Vector3Int(-1, 0, 0);
+    public static readonly Vector3Int Forward = new Vector3Int(0, 0, 1);
+    public static readonly Vector3Int Backward = new Vector3Int(0, 0, -1);
+    public static readonly Vector3Int Zero = new Vector3Int(0, 0, 0);
 
     public Vector3Int(int x, int y, int z)
     {
