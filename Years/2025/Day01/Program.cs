@@ -48,7 +48,6 @@ internal class Program
 
         foreach (int tick in values)
         {
-            System.Console.Write($"Current: {current}\tTick: {tick}");
             // Count full cycles (each 100 units wraps around)
             timesAtZero += Math.Abs(tick / 100);
             int start = current;
@@ -67,7 +66,6 @@ internal class Program
             {
                 timesAtZero++;
             }
-            System.Console.WriteLine($"\tTimes @ 0: {timesAtZero}");
         }
 
         return timesAtZero.ToString();
