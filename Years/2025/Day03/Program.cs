@@ -10,8 +10,8 @@ internal class Program
 
         string[] input = FileHelper.GetLines("data/input.txt");
 
-        System.Console.WriteLine("Part 1: " + Part1(input));
-        System.Console.WriteLine("Part 2: " + Part2(input));
+        System.Console.WriteLine("Part 1: " + Part1(input)); // 17092
+        System.Console.WriteLine("Part 2: " + Part2(input)); // 170147128753455
     }
 
     static string Part1(string[] input)
