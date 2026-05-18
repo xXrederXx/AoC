@@ -12,13 +12,13 @@ internal class Program
 
         string[] input = FileHelper.GetLines("data/example.txt");
 
-        System.Console.WriteLine("Part 1: " + Part1(input));
-        System.Console.WriteLine("Part 2: " + Part2(input));
+        System.Console.WriteLine("Part 1:" + Part1(input));
+        System.Console.WriteLine("Part 2:" + Part2(input));
 
         input = FileHelper.GetLines("data/input.txt");
 
-        System.Console.WriteLine("Part 1: " + Part1(input)); // 1562
-        System.Console.WriteLine("Part 2: " + Part2(input)); // 24292631346665
+        SolutionVerifier.VerifyAndLog("Part 1:", "1562", Part1(input));
+        SolutionVerifier.VerifyAndLog("Part 2:", "24292631346665", Part2(input));
     }
 
     static string Part1(string[] input)

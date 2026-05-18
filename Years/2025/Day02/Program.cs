@@ -15,8 +15,8 @@ internal class Program
             .Select(x => x.Split('-'))
             .ToArray();
 
-        System.Console.WriteLine("Part 1: " + Part1(input)); // 40398804950
-        System.Console.WriteLine("Part 2: " + Part2(input)); // 65794984339
+        SolutionVerifier.VerifyAndLog("Part 1:", "40398804950", Part1(input));
+        SolutionVerifier.VerifyAndLog("Part 2:", "65794984339", Part2(input));
     }
 
     // This works using the following formula:

@@ -13,8 +13,8 @@ internal class Program
             StringSplitOptions.RemoveEmptyEntries
         );
 
-        System.Console.WriteLine("Part 1: " + Part1(input)); // 4387670995909
-        System.Console.WriteLine("Part 2: " + Part2(input)); // 9625320374409
+        SolutionVerifier.VerifyAndLog("Part 1:", "4387670995909", Part1(input));
+        SolutionVerifier.VerifyAndLog("Part 2:", "9625320374409", Part2(input));
     }
 
     static string Part1(string[] input)
