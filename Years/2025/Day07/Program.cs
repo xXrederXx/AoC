@@ -23,8 +23,8 @@ internal class Program
 
     static string Part1(string[] input)
     {
-        List<Vector2> spliters = [];
-        Vector2 startPos = Vector2.One;
+        List<Vector2Int> spliters = [];
+        Vector2Int startPos = Vector2Int.One;
 
         for (int i = 0; i < input.Length; i++)
         {
@@ -33,29 +33,29 @@ internal class Program
             {
                 if (line[j] == 'S')
                 {
-                    startPos = new Vector2(j, i);
+                    startPos = new Vector2Int(j, i);
                 }
                 if (line[j] == '^')
                 {
-                    spliters.Add(new Vector2(j, i));
+                    spliters.Add(new Vector2Int(j, i));
                 }
             }
         }
 
-        List<Vector2> activatedSplitters = [];
+        List<Vector2Int> activatedSplitters = [];
         float lowerBound = spliters.OrderBy(x => x.Y).Last().Y + 1;
-        List<Vector2> beamTipPositions = [];
-        beamTipPositions.Add(new Vector2(startPos.X, startPos.Y + 1));
-        Vector2[] oldBeamTipPositions = [];
+        List<Vector2Int> beamTipPositions = [];
+        beamTipPositions.Add(startPos + Vector2Int.Up);
+        Vector2Int[] oldBeamTipPositions = [];
         while (beamTipPositions.Count != 0)
         {
-            oldBeamTipPositions = new Vector2[beamTipPositions.Count];
+            oldBeamTipPositions = new Vector2Int[beamTipPositions.Count];
             beamTipPositions.CopyTo(oldBeamTipPositions);
             beamTipPositions = [];
 
-            foreach (Vector2 beamTip in oldBeamTipPositions)
+            foreach (Vector2Int beamTip in oldBeamTipPositions)
             {
-                Vector2 nextPos = new Vector2(beamTip.X, beamTip.Y + 1);
+                Vector2Int nextPos = beamTip + Vector2Int.Up;
                 if (nextPos.Y > lowerBound)
                 {
                     // out of bounds
@@ -64,8 +64,8 @@ internal class Program
 
                 if (spliters.Any(x => x.Equals(nextPos)))
                 {
-                    Vector2 newLeft = new(nextPos.X - 1, nextPos.Y);
-                    Vector2 newRight = new(nextPos.X + 1, nextPos.Y);
+                    Vector2Int newLeft = nextPos + Vector2Int.Left;
+                    Vector2Int newRight = nextPos + Vector2Int.Right;
 
                     if (!beamTipPositions.Any(x => x.Equals(newLeft)))
                     {
@@ -90,7 +90,7 @@ internal class Program
     static string Part2(string[] input)
     {
         HashSet<Vector2Int> spliters = [];
-        Vector2Int startPos = new Vector2Int(1, 1);
+        Vector2Int startPos = Vector2Int.One;
 
         for (int i = 0; i < input.Length; i++)
         {
@@ -125,7 +125,7 @@ internal class Program
 
             foreach ((Vector2Int beamTip, ulong beamWeight) in beamWeights)
             {
-                Vector2Int nextPos = new Vector2Int(beamTip.X, beamTip.Y + 1);
+                Vector2Int nextPos = beamTip + Vector2Int.Up;
                 if (nextPos.Y > lowerBound)
                 {
                     // out of bounds
@@ -137,12 +137,12 @@ internal class Program
                 {
                     AddWeight(
                         nextBeamWeights,
-                        new Vector2Int(nextPos.X + 1, nextPos.Y),
+                        nextPos + Vector2Int.Right,
                         beamWeight
                     );
                     AddWeight(
                         nextBeamWeights,
-                        new Vector2Int(nextPos.X - 1, nextPos.Y),
+                        nextPos + Vector2Int.Left,
                         beamWeight
                     );
                     continue;
