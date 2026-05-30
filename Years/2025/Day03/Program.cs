@@ -10,8 +10,8 @@ internal class Program
 
         string[] input = FileHelper.GetLines("data/input.txt");
 
-        System.Console.WriteLine("Part 1: " + Part1(input));
-        System.Console.WriteLine("Part 2: " + Part2(input));
+        SolutionVerifier.VerifyAndLog("Part 1:", "17092", Part1(input));
+        SolutionVerifier.VerifyAndLog("Part 2:", "170147128753455", Part2(input));
     }
 
     static string Part1(string[] input)
@@ -19,7 +19,7 @@ internal class Program
         int sum = 0;
         foreach (string battery in input)
         {
-            int[] banks = battery.Select(CharHelper.CharToInt).ToArray();
+            int[] banks = battery.Select(CharHelper.ParseDigit).ToArray();
             // Find the largest digit
             int firstIdx = findBiggestInRange(banks, 0, banks.Length - 1);
             // Find the next largest after the first
@@ -35,7 +35,7 @@ internal class Program
         long sum = 0;
         foreach (string battery in input)
         {
-            int[] banks = battery.Select(CharHelper.CharToInt).ToArray();
+            int[] banks = battery.Select(CharHelper.ParseDigit).ToArray();
             int[] indexes = new int[takes];
             // Selectively find the largest digits, ensuring enough remain for later picks
             for (int i = 0; i < takes; i++)

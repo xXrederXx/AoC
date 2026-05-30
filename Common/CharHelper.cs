@@ -2,7 +2,12 @@ namespace AoC.Common;
 
 public static class CharHelper
 {
-    public static int SafeCharToInt(char chr)
+    /// <summary>
+    /// Convers a char to an int
+    /// </summary>
+    /// <param name="chr"></param>
+    /// <returns></returns>
+    public static int TryParseDigit(char chr)
     {
         return chr switch
         {
@@ -19,9 +24,9 @@ public static class CharHelper
             _ => -1,
         };
     }
-    public static int CharToInt(char chr)
+    public static int ParseDigit(char chr)
     {
-        int num = SafeCharToInt(chr);
+        int num = TryParseDigit(chr);
 
         if(num == - 1)
         {
