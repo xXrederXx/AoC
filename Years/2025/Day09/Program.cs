@@ -9,7 +9,7 @@ internal class Program
     {
         System.Console.WriteLine("Advent of Code 2025 - Day 09");
 
-        string[] input = FileHelper.GetLines("data/input.txt");
+        string[] input = FileHelper.GetLines("data/example.txt");
 
         System.Console.WriteLine("Part 1: " + Part1(input));
         System.Console.WriteLine("Part 2: " + Part2(input));
@@ -49,7 +49,7 @@ internal class Program
             .Select(x => new Vector2Int(int.Parse(x[0]), int.Parse(x[1])))
             .ToArray();
 
-        HashSet<Vector2Int> greenTiles = new HashSet<Vector2Int>();
+        Dictionary<int, SortedSet<int>> greenXsByY = new();
         for (int i = 0; i < redTiles.Length; i++)
         {
             Vector2Int red1 = redTiles[i];
@@ -57,7 +57,14 @@ internal class Program
             Vector2Int[] newGreens = generateLinePoints(red1, red2);
             foreach (Vector2Int greenTile in newGreens)
             {
-                greenTiles.Add(greenTile);
+                if (greenXsByY.TryGetValue(greenTile.Y, out SortedSet<int> Xs))
+                {
+                    Xs.Add(greenTile.X);
+                }
+                else
+                {
+                    greenXsByY.Add(greenTile.Y, new SortedSet<int>() { greenTile.X });
+                }
             }
         }
         Console.WriteLine("Loaded all green tiles");
@@ -78,7 +85,7 @@ internal class Program
                 borderTiles.AddRange(generateLinePoints(red2, new Vector2Int(red2.X, red1.Y)));
                 borderTiles.AddRange(generateLinePoints(red2, new Vector2Int(red1.X, red2.Y)));
 
-                if (!allBorderInside(greenTiles, checkCache, borderTiles))
+                if (!allBorderInside(greenXsByY, checkCache, borderTiles))
                 {
                     continue;
                 }
@@ -97,7 +104,7 @@ internal class Program
     }
 
     static bool allBorderInside(
-        HashSet<Vector2Int> greenTiles,
+        Dictionary<int, SortedSet<int>> greenXsByY,
         Dictionary<Vector2Int, bool> checkCache,
         List<Vector2Int> borderTiles
     )
@@ -112,7 +119,7 @@ internal class Program
                 }
                 return false;
             }
-            bool checkedTile = isInside(greenTiles, borderTile);
+            bool checkedTile = isInside(greenXsByY, borderTile);
             checkCache.Add(borderTile, checkedTile);
             if (!checkedTile)
             {
@@ -122,17 +129,15 @@ internal class Program
         return true;
     }
 
-    static bool isInside(HashSet<Vector2Int> greenTiles, Vector2Int checkTile)
+    static bool isInside(Dictionary<int, SortedSet<int>> greenXsByY, Vector2Int checkTile)
     {
-        if (greenTiles.Contains(checkTile))
+        if (!greenXsByY.TryGetValue(checkTile.Y, out SortedSet<int> Xs))
         {
-            return true;
+            return false;
         }
-        int numCrossed = greenTiles
-            .AsValueEnumerable()
-            .Where(tile => tile.Y == checkTile.Y)
-            .Where(tile => tile.X > checkTile.X)
-            .Count();
+        if (Xs.Contains(checkTile.X))
+            return true;
+        int numCrossed = Xs.Count(x => x > checkTile.X);
         return numCrossed % 2 == 1;
     }
 
@@ -152,11 +157,11 @@ internal class Program
             start = tile1.Y < tile2.Y ? tile1.Y : tile2.Y;
             end = tile1.Y > tile2.Y ? tile1.Y : tile2.Y;
         }
-        List<Vector2Int> greens = [];
+        Vector2Int[] greens = new Vector2Int[end - start + 1];
         for (int i = start; i <= end; i++)
         {
-            greens.Add(new Vector2Int(isX ? i : tile1.X, isX ? tile1.X : i));
+            greens[i - start] = (new Vector2Int(isX ? i : tile1.X, isX ? tile1.X : i));
         }
-        return greens.ToArray();
+        return greens;
     }
 }
