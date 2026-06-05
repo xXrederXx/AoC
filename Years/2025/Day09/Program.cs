@@ -9,10 +9,10 @@ internal class Program
     {
         System.Console.WriteLine("Advent of Code 2025 - Day 09");
 
-        string[] input = FileHelper.GetLines("data/example.txt");
+        string[] input = FileHelper.GetLines("data/input.txt");
 
         System.Console.WriteLine("Part 1: " + Part1(input));
-        System.Console.WriteLine("Part 2: " + Part2(input));
+        System.Console.WriteLine("Part 2: " + Part2(input)); // 223975695 is too low :(
     }
 
     static string Part1(string[] input)
@@ -160,7 +160,7 @@ internal class Program
         Vector2Int[] greens = new Vector2Int[end - start + 1];
         for (int i = start; i <= end; i++)
         {
-            greens[i - start] = (new Vector2Int(isX ? i : tile1.X, isX ? tile1.X : i));
+            greens[i - start] = (new Vector2Int(isX ? i : tile1.X, isX ? tile1.Y : i));
         }
         return greens;
     }
