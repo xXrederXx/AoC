@@ -11,8 +11,8 @@ internal class Program
 
         string[] input = FileHelper.GetLines("data/input.txt");
 
-        System.Console.WriteLine("Part 1: " + Part1(input));
-        System.Console.WriteLine("Part 2: " + Part2(input)); // 223975695 is too low :(
+        SolutionVerifier.VerifyAndLog("Part 1:", "4786902990", Part1(input));
+        SolutionVerifier.VerifyAndLog("Part 2:", "1571016172", Part2(input));
     }
 
     static string Part1(string[] input)
@@ -49,26 +49,6 @@ internal class Program
             .Select(x => new Vector2Int(int.Parse(x[0]), int.Parse(x[1])))
             .ToArray();
 
-        Dictionary<int, SortedSet<int>> greenXsByY = new();
-        for (int i = 0; i < redTiles.Length; i++)
-        {
-            Vector2Int red1 = redTiles[i];
-            Vector2Int red2 = redTiles[(i + 1) % redTiles.Length];
-            Vector2Int[] newGreens = generateLinePoints(red1, red2);
-            foreach (Vector2Int greenTile in newGreens)
-            {
-                if (greenXsByY.TryGetValue(greenTile.Y, out SortedSet<int> Xs))
-                {
-                    Xs.Add(greenTile.X);
-                }
-                else
-                {
-                    greenXsByY.Add(greenTile.Y, new SortedSet<int>() { greenTile.X });
-                }
-            }
-        }
-        Console.WriteLine("Loaded all green tiles");
-
         Dictionary<Vector2Int, bool> checkCache = new();
         ulong biggestArea = 0;
         for (int i = 0; i < redTiles.Length; i++)
@@ -79,13 +59,9 @@ internal class Program
             {
                 Vector2Int red2 = redTiles[j];
 
-                List<Vector2Int> borderTiles = [];
-                borderTiles.AddRange(generateLinePoints(red1, new Vector2Int(red2.X, red1.Y)));
-                borderTiles.AddRange(generateLinePoints(red1, new Vector2Int(red1.X, red2.Y)));
-                borderTiles.AddRange(generateLinePoints(red2, new Vector2Int(red2.X, red1.Y)));
-                borderTiles.AddRange(generateLinePoints(red2, new Vector2Int(red1.X, red2.Y)));
+                Vector2Int[] borderTiles = GenerateAllLinePoints(red1, red2);
 
-                if (!allBorderInside(greenXsByY, checkCache, borderTiles))
+                if (!AllBorderInside(redTiles, checkCache, borderTiles))
                 {
                     continue;
                 }
@@ -103,10 +79,10 @@ internal class Program
         return biggestArea.ToString();
     }
 
-    static bool allBorderInside(
-        Dictionary<int, SortedSet<int>> greenXsByY,
+    static bool AllBorderInside(
+        Vector2Int[] redTiles,
         Dictionary<Vector2Int, bool> checkCache,
-        List<Vector2Int> borderTiles
+        Vector2Int[] borderTiles
     )
     {
         foreach (Vector2Int borderTile in borderTiles)
@@ -119,7 +95,7 @@ internal class Program
                 }
                 return false;
             }
-            bool checkedTile = isInside(greenXsByY, borderTile);
+            bool checkedTile = PointInsidePolygon.Contains(redTiles, borderTile) != PointInsidePolygon.PointContainment.Outside;
             checkCache.Add(borderTile, checkedTile);
             if (!checkedTile)
             {
@@ -129,39 +105,52 @@ internal class Program
         return true;
     }
 
-    static bool isInside(Dictionary<int, SortedSet<int>> greenXsByY, Vector2Int checkTile)
+    static Vector2Int[] GenerateAllLinePoints(Vector2Int red1, Vector2Int red2)
     {
-        if (!greenXsByY.TryGetValue(checkTile.Y, out SortedSet<int> Xs))
-        {
-            return false;
-        }
-        if (Xs.Contains(checkTile.X))
-            return true;
-        int numCrossed = Xs.Count(x => x > checkTile.X);
-        return numCrossed % 2 == 1;
+
+        // Horizontal Top
+        Vector2Int[] ht = GenerateLinePoints(red1, new Vector2Int(red2.X, red1.Y));
+
+        // Vertical Left
+        Vector2Int[] vl = GenerateLinePoints(red1, new Vector2Int(red1.X, red2.Y));
+
+        // Horizontal Bottom
+        Vector2Int[] hb = GenerateLinePoints(red2, new Vector2Int(red2.X, red1.Y));
+
+        // Vertical Right
+        Vector2Int[] vr = GenerateLinePoints(red2, new Vector2Int(red1.X, red2.Y));
+
+        return ArrayConcatenator.ConcatArrays(ht, vl, hb, vr);
     }
 
-    static Vector2Int[] generateLinePoints(Vector2Int tile1, Vector2Int tile2)
+    static Vector2Int[] GenerateLinePoints(Vector2Int tile1, Vector2Int tile2)
     {
-        int start = 0;
-        int end = 0;
-        bool isX = false;
-        if (tile1.X != tile2.X)
-        {
-            start = tile1.X < tile2.X ? tile1.X : tile2.X;
-            end = tile1.X > tile2.X ? tile1.X : tile2.X;
-            isX = true;
-        }
-        if (tile1.Y != tile2.Y)
-        {
-            start = tile1.Y < tile2.Y ? tile1.Y : tile2.Y;
-            end = tile1.Y > tile2.Y ? tile1.Y : tile2.Y;
-        }
+        (int start, int end, bool isHorizontal) = GenerateLinePointsMeta(tile1, tile2);
+
         Vector2Int[] greens = new Vector2Int[end - start + 1];
+
         for (int i = start; i <= end; i++)
         {
-            greens[i - start] = (new Vector2Int(isX ? i : tile1.X, isX ? tile1.Y : i));
+            greens[i - start] = (new Vector2Int(isHorizontal ? i : tile1.X, isHorizontal ? tile1.Y : i));
         }
         return greens;
+    }
+
+    static (int start, int end, bool isHorizontal) GenerateLinePointsMeta(Vector2Int tile1, Vector2Int tile2)
+    {
+        bool isHorizontal = tile1.X != tile2.X;
+        int start;
+        int end;
+        if (isHorizontal)
+        {
+            start = Math.Min(tile1.X, tile2.X);
+            end = Math.Max(tile1.X, tile2.X);
+        }
+        else
+        {
+            start = Math.Min(tile1.Y, tile2.Y);
+            end = Math.Max(tile1.Y, tile2.Y);
+        }
+        return (start, end, isHorizontal);
     }
 }
