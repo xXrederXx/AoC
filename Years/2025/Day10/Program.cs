@@ -10,7 +10,7 @@ internal class Program
 
         string[] input = FileHelper.GetLines("data/input.txt");
 
-        SolutionVerifier.VerifyAndLog("Part 1:", "452", Part1(input));
+        SolutionVerifier.VerifyAndLog("Part 1:", "452", Part1(input)); // 17705984 Nodes
         System.Console.WriteLine("Part 2:" + Part2(input));
     }
 
@@ -28,25 +28,27 @@ internal class Program
 
     static int Par1ProcessMachine(Machine machine)
     {
-        Node root = new Node(null, -1, new bool[machine.ToAchive.Length]);
+        Node<bool> root = new Node<bool>(null, -1, new bool[machine.ToAchive.Length]);
 
-        List<Node> activeNodes = [root];
-        List<Node> newActiveNodes = [];
+        List<Node<bool>> activeNodes = [root];
+        List<Node<bool>> newActiveNodes = [];
         while (activeNodes.Find(node => node.State.SequenceEqual(machine.ToAchive)) is null)
         {
-            foreach (Node active in activeNodes)
+            foreach (Node<bool> active in activeNodes)
             {
                 for (int i = 0; i < machine.ButtonsInIndexes.Count; i++)
                 {
                     int[] operation = machine.ButtonsInIndexes[i];
-                    newActiveNodes.Add(new Node(active, i, FlipSwitches(operation, active.State)));
+                    newActiveNodes.Add(
+                        new Node<bool>(active, i, FlipSwitches(operation, active.State))
+                    );
                 }
             }
             activeNodes.Clear();
             activeNodes.AddRange(newActiveNodes);
             newActiveNodes.Clear();
         }
-        Node final = activeNodes.Find(node => node.State.SequenceEqual(machine.ToAchive))!;
+        Node<bool> final = activeNodes.Find(node => node.State.SequenceEqual(machine.ToAchive))!;
         return final.Depth;
     }
 
