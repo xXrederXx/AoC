@@ -31,7 +31,7 @@ try {
     Set-Location $folder
 
     # Run the project
-    dotnet run
+    dotnet run -c Release -p:OptimizationPreference=Speed
 }
 finally {
     # Restore original directory
