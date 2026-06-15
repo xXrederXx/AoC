@@ -1,0 +1,69 @@
+using AoC.Common;
+
+namespace AoC.Y2025.Day10;
+
+internal class Program
+{
+    public static void Main(string[] args)
+    {
+        System.Console.WriteLine("Advent of Code 2025 - Day 10");
+
+        string[] input = FileHelper.GetLines("data/input.txt");
+
+        SolutionVerifier.VerifyAndLog("Part 1:", "452", Part1(input));
+        System.Console.WriteLine("Part 2:" + Part2(input));
+    }
+
+    static string Part1(string[] input)
+    {
+        Machine[] machines = input.Select(line => new Machine(line)).ToArray();
+
+        return machines.Sum(Par1ProcessMachine).ToString();
+    }
+
+    static string Part2(string[] input)
+    {
+        return string.Join('\n', input);
+    }
+
+    static int Par1ProcessMachine(Machine machine)
+    {
+        Node root = new Node(null, -1, new bool[machine.ToAchive.Length]);
+
+        List<Node> activeNodes = [root];
+        List<Node> newActiveNodes = [];
+        while (activeNodes.Find(node => node.State.SequenceEqual(machine.ToAchive)) is null)
+        {
+            foreach (Node active in activeNodes)
+            {
+                for (int i = 0; i < machine.ButtonsInIndexes.Count; i++)
+                {
+                    int[] operation = machine.ButtonsInIndexes[i];
+                    newActiveNodes.Add(new Node(active, i, FlipSwitches(operation, active.State)));
+                }
+            }
+            activeNodes.Clear();
+            activeNodes.AddRange(newActiveNodes);
+            newActiveNodes.Clear();
+        }
+        Node final = activeNodes.Find(node => node.State.SequenceEqual(machine.ToAchive))!;
+        return final.Depth;
+    }
+
+    static bool[] FlipSwitches(int[] operation, bool[] state)
+    {
+        bool[] fliped = new bool[state.Length];
+        for (int i = 0; i < state.Length; i++)
+        {
+            if (operation.Contains(i))
+            {
+                fliped[i] = !state[i];
+            }
+            else
+            {
+                fliped[i] = state[i];
+            }
+        }
+        return fliped;
+    }
+}
