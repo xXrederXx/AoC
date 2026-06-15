@@ -39,9 +39,16 @@ internal class Program
                 for (int i = 0; i < machine.ButtonsInIndexes.Count; i++)
                 {
                     int[] operation = machine.ButtonsInIndexes[i];
-                    newActiveNodes.Add(
-                        new Node<bool>(active, i, FlipSwitches(operation, active.State))
-                    );
+                    bool[] state = FlipSwitches(operation, active.State);
+                    if (
+                        activeNodes.Find(node => node.State.SequenceEqual(state)) is not null
+                        || newActiveNodes.Find(node => node.State.SequenceEqual(state)) is not null
+                    )
+                    {
+                        // node already found
+                        continue;
+                    }
+                    newActiveNodes.Add(new Node<bool>(active, i, state));
                 }
             }
             activeNodes.Clear();
