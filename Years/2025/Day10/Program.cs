@@ -9,7 +9,7 @@ internal class Program
     {
         System.Console.WriteLine("Advent of Code 2025 - Day 10");
 
-        string[] input = FileHelper.GetLines("data/example.txt");
+        string[] input = FileHelper.GetLines("data/input.txt");
 
         SolutionVerifier.VerifyAndLog("Part 1:", "452", Part1(input));
         System.Console.WriteLine("Part 2:" + Part2(input));
@@ -26,7 +26,7 @@ internal class Program
     {
         Machine[] machines = input.Select(line => new Machine(line)).ToArray();
 
-        return machines.Sum(Par2ProcessMachine).ToString();
+        return machines.Select(Par2ProcessMachine).Aggregate((a,b) => a+b).ToString();
     }
 
     static int Par1ProcessMachine(Machine machine)
@@ -62,7 +62,7 @@ internal class Program
         return final.Depth;
     }
 
-    static int Par2ProcessMachine(Machine machine)
+    static ulong Par2ProcessMachine(Machine machine)
     {
         // Generates my green rows
         List<int[]> buttonVectors = new List<int[]>(machine.ButtonsInIndexes.Count);
@@ -73,6 +73,7 @@ internal class Program
             {
                 buttonVector[idx] = 1;
             }
+            buttonVectors.Add(buttonVector);
         }
 
         int[] weights = new int[buttonVectors.Count];
@@ -83,25 +84,9 @@ internal class Program
                 .Where(x => x > 0) // Filter out 0s
                 .Min(); // Get the smallest value
         }
+        System.Console.WriteLine($"{weights.Aggregate(1UL, (current,next) => current*((ulong)next+1))} Possabilities => {string.Join(", ", weights)}");
 
-        while(true)
-        {
-            for (int i = 0; i < weights.Length; i++)
-            {
-                int startWeight = weights[i];
-
-                for (int currentWeight = 0; currentWeight >= 0; currentWeight--)
-                {
-                    weights[i] = currentWeight;
-                    if(IsValidWeights(weights, buttonVectors, machine.Joltages))
-                    {
-                        return weights.Sum();
-                    }
-                }
-            }
-        }
-
-        return 0;
+        return weights.Aggregate(1UL, (current,next) => current*((ulong)next+1));
     }
 
     static bool IsValidWeights(int[] weights, List<int[]> buttonVectors, int[] joltages)
