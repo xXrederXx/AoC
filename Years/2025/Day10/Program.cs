@@ -9,7 +9,7 @@ internal class Program
     {
         System.Console.WriteLine("Advent of Code 2025 - Day 10");
 
-        string[] input = FileHelper.GetLines("data/input.txt");
+        string[] input = FileHelper.GetLines("data/example.txt");
 
         SolutionVerifier.VerifyAndLog("Part 1:", "452", Part1(input));
         System.Console.WriteLine("Part 2:" + Part2(input));
@@ -64,61 +64,61 @@ internal class Program
 
     static int Par2ProcessMachine(Machine machine)
     {
-        System.Console.WriteLine($"Process machine: {machine}");
-        Node<int> root = new Node<int>(null, -1, new int[machine.ToAchive.Length]);
-
-        List<Node<int>> activeNodes = [root];
-        List<Node<int>> newActiveNodes = [];
-        while (activeNodes.Find(node => node.State.SequenceEqual(machine.Joltages)) is null)
+        // Generates my green rows
+        List<int[]> buttonVectors = new List<int[]>(machine.ButtonsInIndexes.Count);
+        foreach (int[] buttonIdxs in machine.ButtonsInIndexes)
         {
-            int discard = 0;
-            foreach (Node<int> active in activeNodes)
+            int[] buttonVector = new int[machine.Joltages.Length];
+            foreach (int idx in buttonIdxs)
             {
-                for (int i = 0; i < machine.ButtonsInIndexes.Count; i++)
-                {
-                    int[] operation = machine.ButtonsInIndexes[i];
-                    int[] state = UpdateState(operation, active.State);
-                    if (
-                        activeNodes.Find(node => node.State.SequenceEqual(state)) is not null
-                        || newActiveNodes.Find(node => node.State.SequenceEqual(state)) is not null
-                    )
-                    {
-                        // node already found
+                buttonVector[idx] = 1;
+            }
+        }
 
-                        continue;
-                    }
-                    if (state.Where((joltage, idx) => joltage > machine.Joltages[idx]).Any())
+        int[] weights = new int[buttonVectors.Count];
+        for (int i = 0; i < weights.Length; i++)
+        {
+            weights[i] = buttonVectors[i]
+                .Select((value, idx) => value * machine.Joltages[idx]) // Multiply Joltages and ButtonVector
+                .Where(x => x > 0) // Filter out 0s
+                .Min(); // Get the smallest value
+        }
+
+        while(true)
+        {
+            for (int i = 0; i < weights.Length; i++)
+            {
+                int startWeight = weights[i];
+
+                for (int currentWeight = 0; currentWeight >= 0; currentWeight--)
+                {
+                    weights[i] = currentWeight;
+                    if(IsValidWeights(weights, buttonVectors, machine.Joltages))
                     {
-                        // at least one joltage is too high so this path can be discarded
-                        continue;
+                        return weights.Sum();
                     }
-                    newActiveNodes.Add(new Node<int>(active, i, state));
                 }
             }
-            activeNodes.Clear();
-            activeNodes.AddRange(newActiveNodes);
-            newActiveNodes.Clear();
-            System.Console.WriteLine($"Nodes: {activeNodes.Count} {discard}");
         }
-        Node<int> final = activeNodes.Find(node => node.State.SequenceEqual(machine.Joltages))!;
-        return final.Depth;
+
+        return 0;
     }
 
-    private static int[] UpdateState(int[] operation, int[] state)
+    static bool IsValidWeights(int[] weights, List<int[]> buttonVectors, int[] joltages)
     {
-        int[] updated = new int[state.Length];
-        for (int i = 0; i < state.Length; i++)
+        List<int[]> buttonVectorsMultiplied = buttonVectors
+            .Select((vec, idx) => vec.Select(value => value * weights[idx]).ToArray())
+            .ToList();
+
+        for (int i = 0; i < joltages.Length; i++)
         {
-            if (operation.Contains(i))
+            int currentJoltage = buttonVectors.Sum(vec => vec[i]);
+            if(currentJoltage != joltages[i])
             {
-                updated[i] = state[i] + 1;
-            }
-            else
-            {
-                updated[i] = state[i];
+                return false;
             }
         }
-        return updated;
+        return true;
     }
 
     static bool[] FlipSwitches(int[] operation, bool[] state)
