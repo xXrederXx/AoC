@@ -65,13 +65,19 @@ internal class Program
 
     static ulong Par2ProcessMachine(Machine machine)
     {
+        // This solution uses Z3
+
         var ctx = new Context();
         var opt = ctx.MkOptimize();
+
+        // Create variables w0 to wN where N is the last button
+        // The variables tell how many times the button is pressed
         var presses = Enumerable
             .Range(0, machine.ButtonsInIndexes.Count)
             .Select(i => ctx.MkIntConst($"w{i}"))
             .ToArray();
 
+        // Telling Z3 that every variable w0 to wN needs to be >= 0
         foreach (var press in presses)
         {
             opt.Add(ctx.MkGe(press, ctx.MkInt(0)));
@@ -79,40 +85,30 @@ internal class Program
 
         for (int i = 0; i < machine.Joltages.Length; i++)
         {
+            // Sort for all buttons which affect joltage[i]
             var terms = presses.Where((press, idx) => machine.ButtonsInIndexes[idx].Contains(i));
+
+            // Calculating total of presses as fromula
             ArithExpr total = terms.Any() ? ctx.MkAdd(terms.ToArray()) : ctx.MkInt(0);
+
+            // Telling Z3 that the total presses needs to equal joltages[i]
             opt.Add(ctx.MkEq(total, ctx.MkInt(machine.Joltages[i])));
         }
 
+        // Telling Z3 i need the result where i have the least amount of presses
         opt.MkMinimize(ctx.MkAdd(presses));
 
+        // Check if it is possible
         if (opt.Check() == Status.SATISFIABLE)
         {
             var model = opt.Model;
+            // Calculate the sum as ulongs
             return presses
                 .Select(p => ((IntNum)model.Evaluate(p)).UInt64)
                 .Aggregate((a, c) => a + c);
         }
         return 0;
     }
-
-    static bool IsValidWeights(int[] weights, List<int[]> buttonVectors, int[] joltages)
-    {
-        List<int[]> buttonVectorsMultiplied = buttonVectors
-            .Select((vec, idx) => vec.Select(value => value * weights[idx]).ToArray())
-            .ToList();
-
-        for (int i = 0; i < joltages.Length; i++)
-        {
-            int currentJoltage = buttonVectors.Sum(vec => vec[i]);
-            if (currentJoltage != joltages[i])
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-
     static bool[] FlipSwitches(int[] operation, bool[] state)
     {
         bool[] fliped = new bool[state.Length];
