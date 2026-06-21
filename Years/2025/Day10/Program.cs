@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using AoC.Common;
+using Microsoft.Z3;
 
 namespace AoC.Y2025.Day10;
 
@@ -12,7 +13,7 @@ internal class Program
         string[] input = FileHelper.GetLines("data/input.txt");
 
         SolutionVerifier.VerifyAndLog("Part 1:", "452", Part1(input));
-        System.Console.WriteLine("Part 2:" + Part2(input));
+        SolutionVerifier.VerifyAndLog("Part 2:", "17424", Part2(input));
     }
 
     static string Part1(string[] input)
@@ -26,7 +27,7 @@ internal class Program
     {
         Machine[] machines = input.Select(line => new Machine(line)).ToArray();
 
-        return machines.Select(Par2ProcessMachine).Aggregate((a,b) => a+b).ToString();
+        return machines.Select(Par2ProcessMachine).Aggregate((a, b) => a + b).ToString();
     }
 
     static int Par1ProcessMachine(Machine machine)
@@ -64,29 +65,35 @@ internal class Program
 
     static ulong Par2ProcessMachine(Machine machine)
     {
-        // Generates my green rows
-        List<int[]> buttonVectors = new List<int[]>(machine.ButtonsInIndexes.Count);
-        foreach (int[] buttonIdxs in machine.ButtonsInIndexes)
+        var ctx = new Context();
+        var opt = ctx.MkOptimize();
+        var presses = Enumerable
+            .Range(0, machine.ButtonsInIndexes.Count)
+            .Select(i => ctx.MkIntConst($"w{i}"))
+            .ToArray();
+
+        foreach (var press in presses)
         {
-            int[] buttonVector = new int[machine.Joltages.Length];
-            foreach (int idx in buttonIdxs)
-            {
-                buttonVector[idx] = 1;
-            }
-            buttonVectors.Add(buttonVector);
+            opt.Add(ctx.MkGe(press, ctx.MkInt(0)));
         }
 
-        int[] weights = new int[buttonVectors.Count];
-        for (int i = 0; i < weights.Length; i++)
+        for (int i = 0; i < machine.Joltages.Length; i++)
         {
-            weights[i] = buttonVectors[i]
-                .Select((value, idx) => value * machine.Joltages[idx]) // Multiply Joltages and ButtonVector
-                .Where(x => x > 0) // Filter out 0s
-                .Min(); // Get the smallest value
+            var terms = presses.Where((press, idx) => machine.ButtonsInIndexes[idx].Contains(i));
+            ArithExpr total = terms.Any() ? ctx.MkAdd(terms.ToArray()) : ctx.MkInt(0);
+            opt.Add(ctx.MkEq(total, ctx.MkInt(machine.Joltages[i])));
         }
-        System.Console.WriteLine($"{weights.Aggregate(1UL, (current,next) => current*((ulong)next+1))} Possabilities => {string.Join(", ", weights)}");
 
-        return weights.Aggregate(1UL, (current,next) => current*((ulong)next+1));
+        opt.MkMinimize(ctx.MkAdd(presses));
+
+        if (opt.Check() == Status.SATISFIABLE)
+        {
+            var model = opt.Model;
+            return presses
+                .Select(p => ((IntNum)model.Evaluate(p)).UInt64)
+                .Aggregate((a, c) => a + c);
+        }
+        return 0;
     }
 
     static bool IsValidWeights(int[] weights, List<int[]> buttonVectors, int[] joltages)
@@ -98,7 +105,7 @@ internal class Program
         for (int i = 0; i < joltages.Length; i++)
         {
             int currentJoltage = buttonVectors.Sum(vec => vec[i]);
-            if(currentJoltage != joltages[i])
+            if (currentJoltage != joltages[i])
             {
                 return false;
             }
