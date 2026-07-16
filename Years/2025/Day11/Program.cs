@@ -8,22 +8,26 @@ internal class Program
     {
         System.Console.WriteLine("Advent of Code 2025 - Day 11");
 
-        string[] input = FileHelper.GetLines("data/example.txt");
+        string[] input = FileHelper.GetLines("data/input.txt");
 
-        System.Console.WriteLine("Part 1:" + Part1(input));
+        SolutionVerifier.VerifyAndLog("Part 1:", Part1(input), "477");
         System.Console.WriteLine("Part 2:" + Part2(input));
     }
 
     static string Part1(string[] input)
     {
         HashSet<Node> nodes = input
-            .Select(line => line.Split(':').SelectMany(x => x.Split(' ').Select(x => x.Trim().Trim(':')).Where(x => !x.IsWhiteSpace())))
-            .Select(ids => new Node(ids.First(), ids.Skip(1).ToArray())).ToHashSet();
+            .Select(line =>
+                line.Split(':')
+                    .SelectMany(x =>
+                        x.Split(' ').Select(x => x.Trim().Trim(':')).Where(x => !x.IsWhiteSpace())
+                    )
+            )
+            .Select(ids => new Node(ids.First(), ids.Skip(1).ToArray()))
+            .ToHashSet();
         nodes.Add(new Node("out", []));
 
-
-        int paths = GfG.CountPaths(nodes);
-        return paths.ToString();
+        return nodes.First(n => n.Id == "you").CountToOut(nodes).ToString();
     }
 
     static string Part2(string[] input)
@@ -31,4 +35,3 @@ internal class Program
         return string.Join('\n', input);
     }
 }
-
