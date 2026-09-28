@@ -10,8 +10,8 @@ internal class Program
 
         string[] input = FileHelper.GetLines("data/input.txt");
 
-        // SolutionVerifier.VerifyAndLog("Part 1:", Part1(input), "477");
-        System.Console.WriteLine("Part 2:" + Part2(input));
+        SolutionVerifier.VerifyAndLog("Part 1:", Part1(input), "477");
+        SolutionVerifier.VerifyAndLog("Part 2:", Part2(input), "383307150903216");
     }
 
     static string Part1(string[] input)
@@ -32,7 +32,7 @@ internal class Program
 
     static string Part2(string[] input)
     {
-        HashSet<Node> nodes = input
+        Dictionary<string, Node> nodes = input
             .Select(line =>
                 line.Split(':')
                     .SelectMany(x =>
@@ -40,16 +40,19 @@ internal class Program
                     )
             )
             .Select(ids => new Node(ids.First(), ids.Skip(1).ToArray()))
-            .ToHashSet();
-        nodes.Add(new Node("out", []));
+            .ToDictionary(node => node.Id);
+        nodes.Add("out", new Node("out", []));
         System.Console.WriteLine($"Loaded {nodes.Count} nodes");
 
-        int dacToFft = nodes.First(n => n.Id == "dac").CountTo(nodes, "fft");
-        System.Console.WriteLine($"Counted {dacToFft} paths from dac to fft");
-        int fftToDac = nodes.First(n => n.Id == "fft").CountTo(nodes, "dac");
-        System.Console.WriteLine($"Counted {fftToDac} paths from fft to dac");
-        int between;
+        Dictionary<string, ulong> cache = new();
+        ulong dacToFft = nodes["dac"].CountTo(nodes, cache, "fft");
+        System.Console.WriteLine($"Counted {dacToFft} paths from dac to fft (dac: {nodes["dac"].Childs?.Length})");
+        cache.Clear();
+        ulong fftToDac = nodes["fft"].CountTo(nodes, cache, "dac");
+        System.Console.WriteLine($"Counted {fftToDac} paths from fft to dac (fft: {nodes["fft"].Childs?.Length})");
+        cache.Clear();
 
+        ulong between;
         string srvToNode;
         string outFromNode;
         if (dacToFft > 0)
@@ -66,12 +69,14 @@ internal class Program
         }
         else
         {
-            throw new InvalidDataException("NOPE");
+            throw new InvalidDataException("No path between fft and dac found!!!!");
         }
         System.Console.WriteLine("Loaded between");
 
-        int fromSrv = nodes.First(n => n.Id == "svr").CountTo(nodes, srvToNode);
-        int toOut = nodes.First(n => n.Id == outFromNode).CountTo(nodes, "out");
+        ulong fromSrv = nodes["svr"].CountTo(nodes, cache, srvToNode);
+        cache.Clear();
+        ulong toOut = nodes[outFromNode].CountTo(nodes, cache, "out");
+        cache.Clear();
 
         return (fromSrv * between * toOut)
             .ToString();

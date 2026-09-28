@@ -1,6 +1,6 @@
 namespace AoC.Y2025.Day11;
 
-public class Node(string Id, string[]? Childs) : IEquatable<Node>
+public sealed class Node(string Id, string[]? Childs) : IEquatable<Node>
 {
 
     public int IdAsInt { get; } =
@@ -9,7 +9,6 @@ public class Node(string Id, string[]? Childs) : IEquatable<Node>
             : throw new ArgumentException("Id must contain at least 3 characters.");
     public string Id { get; } = Id;
     public string[]? Childs { get; } = Childs;
-
     public int CountToOut(HashSet<Node> nodes)
     {
         if (Id == "out")
@@ -25,21 +24,30 @@ public class Node(string Id, string[]? Childs) : IEquatable<Node>
         return paths;
     }
 
-    public int CountTo(HashSet<Node> nodes, string id)
+    public ulong CountTo(Dictionary<string, Node> nodes,Dictionary<string, ulong> cache, string id)
     {
-        if (Id == id)
+        if (this.Id == id)
         {
             return 1;
         }
-
-        int paths = 0;
-        foreach (string child in Childs ?? [])
+        if (this.Childs is null || Childs.Length == 0)
         {
-            if (nodes.TryGetValue(new Node(child, []), out Node? node))
+            return 0;
+        }
+        if(cache.TryGetValue(Id, out ulong result))
+        {
+            return result;
+        }
+
+        ulong paths = 0;
+        foreach (string child in Childs)
+        {
+            if (nodes.TryGetValue(child, out Node? node))
             {
-                paths += node.CountTo(nodes, id);
+                paths += node.CountTo(nodes, cache, id);
             }
         }
+        cache[this.Id] = paths;
         return paths;
     }
 
