@@ -16,7 +16,7 @@ internal class Program
 
     static string Part1(string[] input)
     {
-        HashSet<Node> nodes = input
+        Dictionary<string, Node> nodes = input
             .Select(line =>
                 line.Split(':')
                     .SelectMany(x =>
@@ -24,10 +24,10 @@ internal class Program
                     )
             )
             .Select(ids => new Node(ids.First(), ids.Skip(1).ToArray()))
-            .ToHashSet();
-        nodes.Add(new Node("out", []));
+            .ToDictionary(node => node.Id);
+        nodes.Add("out", new Node("out", []));
 
-        return nodes.First(n => n.Id == "you").CountToOut(nodes).ToString();
+        return nodes["you"].CountTo(nodes, new(), "out").ToString();
     }
 
     static string Part2(string[] input)
@@ -42,14 +42,11 @@ internal class Program
             .Select(ids => new Node(ids.First(), ids.Skip(1).ToArray()))
             .ToDictionary(node => node.Id);
         nodes.Add("out", new Node("out", []));
-        System.Console.WriteLine($"Loaded {nodes.Count} nodes");
 
         Dictionary<string, ulong> cache = new();
         ulong dacToFft = nodes["dac"].CountTo(nodes, cache, "fft");
-        System.Console.WriteLine($"Counted {dacToFft} paths from dac to fft (dac: {nodes["dac"].Childs?.Length})");
         cache.Clear();
         ulong fftToDac = nodes["fft"].CountTo(nodes, cache, "dac");
-        System.Console.WriteLine($"Counted {fftToDac} paths from fft to dac (fft: {nodes["fft"].Childs?.Length})");
         cache.Clear();
 
         ulong between;
@@ -71,7 +68,6 @@ internal class Program
         {
             throw new InvalidDataException("No path between fft and dac found!!!!");
         }
-        System.Console.WriteLine("Loaded between");
 
         ulong fromSrv = nodes["svr"].CountTo(nodes, cache, srvToNode);
         cache.Clear();
